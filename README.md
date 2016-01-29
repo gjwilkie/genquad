@@ -9,6 +9,8 @@ where *x<sub>i</sub>* and *w<sub>i</sub>* are the grid points (a.k.a. "abscissae
 
 An important feature of Gaussian quadrature is *spectral accuracy*. Instead of the error decreasing as a power of *N*, it decreases **exponentially* with *N*.
 
+If you wish to use *N* > 80, quadratic precision is necessary in calculating the quadrature rules (though not necessarily in the rules themselves). To do so, include the flag `-freal-r-real-16` if compiling with gfortran. However, if you need this many grid points, you should consider using a different weighting function or an adaptive numerical integration scheme.
+
 ## Using genquad
 
 1. Copy quadpack.f90 and genquad.f90 to your source directory and include the `genquad` module
