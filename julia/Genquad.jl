@@ -1,7 +1,8 @@
 module Genquad
 using Cubature
+using Base.Test
 
-export genquadrules, test_genquad
+export genquadrules
 
 function genquadrules(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
    functest = wgtfcn(0.5*(endpts[1]+endpts[2]))
@@ -72,10 +73,10 @@ function genquadrules(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
 
    b = copy(sqrt(b))
 
-println("a=")
-println(a)
-println("b=")
-println(b)
+#println("a=")
+#println(a)
+#println("b=")
+#println(b)
 
    matrix = zeros(N,N)
    for i = 1:N
@@ -143,18 +144,120 @@ function pquad(f::Function,endpts...;reltol=1.0e-8)
    end
 end
 
-function test_genquad()
+function test()
 
-   function g(x::Float64)
-      return exp(-x^2)
-#      return exp(-x)
-#      return 1.0
+   const epsfac = 10.0
+   Nmax = 60
+   tol = 100.0*eps(Float64)*epsfac
+
+   function testpoly(x)
+      return x.^9 - 2.0*x.^8 + 11.0*x.^7 + 50.0*x.^6 - 60.0*x.^5 - 40.0*x.^4 + 19.0*x.^3 - 7.0*x.^2 + 2.0*x - 5.0
    end
-   xpts,wgts = genquadrules(g,20,[-Inf,Inf])
-#   xpts,wgts = genquadrules(g,5,[-1.0,1.0])
 
+   function testtrig(x)
+      return cos(4.0*x - 2.0)
+#      return tanh(4.0*x - 2.0)
+   end
+
+   # Hermite quadrature
+   print("Testing Hermite quadrature...")
+   function g(x)
+      return exp(-x.^2)
+   end
+
+   function gtrig(x) 
+      return testtrig(x)*g(x)
+   end
+   function gpoly(x) 
+      return testpoly(x)*g(x)
+   end
    
-   return xpts, wgts
+   xpts,wgts = genquadrules(g,5,[-Inf,Inf])
+   ans,dummy = quadgk(gpoly,-Inf,Inf,reltol=eps(Float64)*epsfac)
+   guess = sum(wgts.*testpoly(xpts))
+   abs(ans - guess)/abs(ans) <= tol || error("N=5 should exactly recover polynomial of degree 9, but is off by "string(ans-guess)" with an exact answer of "string(ans)" +/- "string(dummy)". Tol = "string(tol))
+   
+   converged = false
+   n=4
+   while !converged
+      n <= Nmax || error("Could not converge integrals within "string(Nmax)" test points.")
+      
+      xpts,wgts = genquadrules(g,n,[-Inf,Inf])
+      ans,dummy = quadgk(gtrig,-Inf,Inf,reltol=eps(Float64)*epsfac)
+      guess = sum(wgts.*testtrig(xpts))
+      if (guess - ans) <= tol
+         converged = true
+      end
+      n += 1
+   end
+   println(" PASSED. Converged to exact answer at n = "string(n-1))
+
+   # Shifted Laguerre quadrature
+   print("Testing shifted Laguerre quadrature...")
+   function g(x)
+      return exp(-x)
+   end
+
+   function gtrig(x) 
+      return testtrig(x)*g(x)
+   end
+   function gpoly(x) 
+      return testpoly(x)*g(x)
+   end
+   
+   xpts,wgts = genquadrules(g,5,[-4.0,Inf])
+   ans,dummy = quadgk(gpoly,-4.0,Inf,reltol=eps(Float64)*epsfac)
+   guess = sum(wgts.*testpoly(xpts))
+   abs(ans - guess)/abs(ans) <= tol || error("N=5 should exactly recover polynomial of degree 9, but is off by "string(ans-guess)" with an exact answer of "string(ans)" +/- "string(dummy))
+   
+   converged = false
+   n=4
+   while !converged
+      n <= Nmax || error("Could not converge integrals within "string(Nmax)" test points.")
+      
+      xpts,wgts = genquadrules(g,n,[-4.0,Inf])
+      ans,dummy = quadgk(gtrig,-4.0,Inf)
+      guess = sum(wgts.*testtrig(xpts))
+      if (guess - ans) <= tol
+         converged = true
+      end
+      n += 1
+   end
+   println(" PASSED. Converged to exact answer at n = "string(n-1))
+ 
+   # Shifted Legendre quadrature
+   print("Testing shifted Legendre quadrature...")
+   function g(x)
+      return 4.0
+   end
+
+   function gtrig(x) 
+      return testtrig(x)*g(x)
+   end
+   function gpoly(x) 
+      return testpoly(x)*g(x)
+   end
+   
+   xpts,wgts = genquadrules(g,5,[3.0,20.0])
+   ans,dummy = quadgk(gpoly,3.0,20.0,reltol=eps(Float64)*epsfac)
+   guess = sum(wgts.*testpoly(xpts))
+   abs(ans - guess)/abs(ans) <= tol || error("N=5 should exactly recover polynomial of degree 9, but is off by "string(ans-guess)" with an exact answer of "string(ans)" +/- "string(dummy))
+   
+   converged = false
+   n=4
+   while !converged
+      n <= Nmax || error("Could not converge integrals within "string(Nmax)" test points.")
+      
+      xpts,wgts = genquadrules(g,n,[3.0,20.0])
+      ans,dummy = quadgk(gtrig,3.0,20.0)
+      guess = sum(wgts.*testtrig(xpts))
+      if (guess - ans) <= tol
+         converged = true
+      end
+      n += 1
+   end
+   println(" PASSED. Converged to exact answer at n = "string(n-1))
+ 
 end
 
 end
