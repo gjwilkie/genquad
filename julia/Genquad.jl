@@ -1,13 +1,17 @@
 module Genquad
 using Base.Test
 
-export genquadrules
+export genquadrules,get_coefficients
 
-function genquadrules(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
+const epsfac = 10.0
+
+"""
+a,b = get_coefficients(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
+
+Returns arrays a and b, which are the first N monic recursion coefficients for a set of polynomials orthogonal with respect to measure wgtfcn on the interval between endpts[1] and endpts[2]. Specify any singularities of wgtfcn with extra elements as if you were passing them all as arguments to quadgk.
+"""
+function get_coefficients(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
    functest = wgtfcn(0.5*(endpts[1]+endpts[2]))
-   intwgts = zeros(typeof(functest),N)
-   abscissae = zeros(typeof(endpts[1]),N)
-   const epsfac = 10.0
 
    a=zeros(typeof(functest),N)
    b=zeros(typeof(functest),N)
@@ -20,7 +24,6 @@ function genquadrules(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
    for i in 1:length(endpts)-1
       endpts[i] <  endpts[i+1]   || error("endpts must be monotonically increasing")
    end
-
 
    function wgt_x(x::Real)
       return x*wgtfcn(x)
@@ -70,12 +73,17 @@ function genquadrules(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
       b[n] = moment2/moment1
    end
 
-   b = copy(sqrt(b))
+   return a,b
+end
 
-#println("a=")
-#println(a)
-#println("b=")
-#println(b)
+function genquadrules(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
+   functest = wgtfcn(0.5*(endpts[1]+endpts[2]))
+   intwgts = zeros(typeof(functest),N)
+   abscissae = zeros(typeof(endpts[1]),N)
+
+   a,b = get_coefficients(wgtfcn,N,endpts)
+
+   b = copy(sqrt(b))
 
    matrix = zeros(N,N)
    for i = 1:N
@@ -100,7 +108,6 @@ end
 
 function test()
 
-   const epsfac = 10.0
    Nmax = 60
    tol = 10.0*eps(Float64)*epsfac
 
