@@ -2,3 +2,4 @@
 - Check when use of BigFloat is necessary and use it
 - Make as a julia package
 - Include singular weight in test
+- Even quadgk is very slow compared to fortran QUADPACK. Use that instead.
