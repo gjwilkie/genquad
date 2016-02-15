@@ -130,12 +130,12 @@ function pquad(f::Function,endpts...;reltol=1.0e-8)
             endpts_y = endpts
          end
       end
-#      if (isinf(f_y(endpts_y[1])) || isinf(f_y(endpts_y[2])))  || (isnan(f_y(endpts_y[1])) || isnan(f_y(endpts_y[2]))) 
+      if (isinf(f_y(endpts_y[1])) || isinf(f_y(endpts_y[2])))  || (isnan(f_y(endpts_y[1])) || isnan(f_y(endpts_y[2]))) 
          # If endpoints cannot be evaluated, just use quadgk
          return Base.quadgk(f,endpts...;reltol=reltol)
-#      else
-#         return Cubature.hquadrature(f_y,endpts_y[1],endpts_y[2];reltol=reltol)
-#      end
+      else
+         return Cubature.pquadrature(f_y,endpts_y[1],endpts_y[2];reltol=reltol)
+      end
    end
 
    # Transformed integrand
@@ -148,15 +148,16 @@ function test()
 
    const epsfac = 10.0
    Nmax = 60
-   tol = 100.0*eps(Float64)*epsfac
+   tol = 10.0*eps(Float64)*epsfac
 
    function testpoly(x)
       return x.^9 - 2.0*x.^8 + 11.0*x.^7 + 50.0*x.^6 - 60.0*x.^5 - 40.0*x.^4 + 19.0*x.^3 - 7.0*x.^2 + 2.0*x - 5.0
    end
 
    function testtrig(x)
-      return cos(4.0*x - 2.0)
+#      return cos(4.0*x - 2.0)
 #      return tanh(4.0*x - 2.0)
+      return exp(-x.^4 + 2.0*x.^2)
    end
 
    # Hermite quadrature
@@ -178,7 +179,7 @@ function test()
    abs(ans - guess)/abs(ans) <= tol || error("N=5 should exactly recover polynomial of degree 9, but is off by "string(ans-guess)" with an exact answer of "string(ans)" +/- "string(dummy)". Tol = "string(tol))
    
    converged = false
-   n=4
+   n=2
    while !converged
       n <= Nmax || error("Could not converge integrals within "string(Nmax)" test points.")
       

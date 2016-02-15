@@ -1,0 +1,4 @@
+- Add option to output recursion coefficients
+- Check when use of BigFloat is necessary and use it
+- Simplify the pquad logic / remove dependence on Cubature
+- Make as a julia package
