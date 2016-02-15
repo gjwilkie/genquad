@@ -130,12 +130,12 @@ function pquad(f::Function,endpts...;reltol=1.0e-8)
             endpts_y = endpts
          end
       end
-      if (isinf(f_y(endpts_y[1])) || isinf(f_y(endpts_y[2])))  || (isnan(f_y(endpts_y[1])) || isnan(f_y(endpts_y[2]))) 
+#      if (isinf(f_y(endpts_y[1])) || isinf(f_y(endpts_y[2])))  || (isnan(f_y(endpts_y[1])) || isnan(f_y(endpts_y[2]))) 
          # If endpoints cannot be evaluated, just use quadgk
          return Base.quadgk(f,endpts...;reltol=reltol)
-      else
-         return Cubature.hquadrature(f_y,endpts_y[1],endpts_y[2];reltol=reltol)
-      end
+#      else
+#         return Cubature.hquadrature(f_y,endpts_y[1],endpts_y[2];reltol=reltol)
+#      end
    end
 
    # Transformed integrand
