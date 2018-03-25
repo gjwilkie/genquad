@@ -1,5 +1,5 @@
 #FFLAGS = -O3 -fbounds-check -ffree-form -ffree-line-length-none -fno-backslash -freal-4-real-8 
-FFLAGS = -O3 -freal-4-real-8
+FFLAGS = -O3 -freal-4-real-8 -fPIC
 # For quad precision:
 #FFLAGS = -O3 -fbounds-check -ffree-form -ffree-line-length-none -fno-backslash -freal-4-real-16
 # For debug:
@@ -8,8 +8,8 @@ FFLAGS = -O3 -freal-4-real-8
 LAPACK_LIB = /usr/lib
 
 shared: genquad.f90 quadpack.f90
-	gfortran -shared $(FFLAGS) genquad.f90 -fPIC -o genquad.so
-	gfortran -shared $(FFLAGS) quadpack.f90 -fPIC -o quadpack.so
+	gfortran -shared $(FFLAGS) genquad.f90 -o genquad.so
+	gfortran -shared $(FFLAGS) quadpack.f90 -o quadpack.so
 
 genquad.o : genquad.f90 quadpack.o
 	gfortran -c $(FFLAGS) genquad.f90

@@ -1,8 +1,8 @@
 module Genquad
+using QuadGK
 using Base.Test
 
 export genquadrules,get_coefficients
-
 const epsfac = 10.0
 
 """
@@ -83,7 +83,7 @@ function genquadrules(wgtfcn::Function,N::Integer,endpts::Array{Float64,1})
 
    a,b = get_coefficients(wgtfcn,N,endpts)
 
-   b = copy(sqrt(b))
+   b = copy(sqrt.(b))
 
    matrix = zeros(N,N)
    for i = 1:N
