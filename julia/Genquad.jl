@@ -123,19 +123,19 @@ function test()
 
    # Hermite quadrature
    print("Testing Hermite quadrature...")
-   function g(x)
+   function g_hermite(x)
       return exp(-x.^2)
    end
 
-   function gtrig(x) 
-      return testtrig(x)*g(x)
+   function gtrig_hermite(x) 
+      return testtrig(x)*g_hermite(x)
    end
-   function gpoly(x) 
-      return testpoly(x)*g(x)
+   function gpoly_hermite(x) 
+      return testpoly(x)*g_hermite(x)
    end
    
    xpts,wgts = genquadrules(g,5,[-Inf,Inf])
-   ans,dummy = quadgk(gpoly,-Inf,Inf,reltol=eps(Float64)*epsfac)
+   ans,dummy = quadgk(gpoly_hermite,-Inf,Inf,reltol=eps(Float64)*epsfac)
    guess = sum(wgts.*testpoly(xpts))
    abs(ans - guess)/abs(ans) <= tol || error("N=5 should exactly recover polynomial of degree 9, but is off by "string(ans-guess)" with an exact answer of "string(ans)" +/- "string(dummy)". Tol = "string(tol))
    
@@ -145,7 +145,7 @@ function test()
       n <= Nmax || error("Could not converge integrals within "string(Nmax)" test points.")
       
       xpts,wgts = genquadrules(g,n,[-Inf,Inf])
-      ans,dummy = quadgk(gtrig,-Inf,Inf,reltol=eps(Float64)*epsfac)
+      ans,dummy = quadgk(gtrig_hermite,-Inf,Inf,reltol=eps(Float64)*epsfac)
       guess = sum(wgts.*testtrig(xpts))
       if (guess - ans) <= tol
          converged = true
@@ -156,19 +156,19 @@ function test()
 
    # Shifted Laguerre quadrature
    print("Testing shifted Laguerre quadrature...")
-   function g(x)
+   function g_laguerre(x)
       return exp(-x)
    end
 
-   function gtrig(x) 
-      return testtrig(x)*g(x)
+   function gtrig_laguerre(x) 
+      return testtrig(x)*g_laguerre(x)
    end
-   function gpoly(x) 
-      return testpoly(x)*g(x)
+   function gpoly_laguerre(x) 
+      return testpoly(x)*g_laguerre(x)
    end
    
    xpts,wgts = genquadrules(g,5,[-4.0,Inf])
-   ans,dummy = quadgk(gpoly,-4.0,Inf,reltol=eps(Float64)*epsfac)
+   ans,dummy = quadgk(gpoly_laguerre,-4.0,Inf,reltol=eps(Float64)*epsfac)
    guess = sum(wgts.*testpoly(xpts))
    abs(ans - guess)/abs(ans) <= tol || error("N=5 should exactly recover polynomial of degree 9, but is off by "string(ans-guess)" with an exact answer of "string(ans)" +/- "string(dummy))
    
@@ -178,7 +178,7 @@ function test()
       n <= Nmax || error("Could not converge integrals within "string(Nmax)" test points.")
       
       xpts,wgts = genquadrules(g,n,[-4.0,Inf])
-      ans,dummy = quadgk(gtrig,-4.0,Inf)
+      ans,dummy = quadgk(gtrig_laguerre,-4.0,Inf)
       guess = sum(wgts.*testtrig(xpts))
       if (guess - ans) <= tol
          converged = true
